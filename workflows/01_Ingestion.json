@@ -1,0 +1,196 @@
+{
+  "name": "01_Ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Upload policy document",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Policy PDF",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Document name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Publisher"
+            },
+            {
+              "fieldLabel": "Year",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "74a9ebdb-2f12-40ec-bf1e-52e776eee25e",
+      "name": "On form submission",
+      "webhookId": "36fc9ed7-ae37-49f8-956d-bd7d83c9423b"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3aabde1f-354a-42b2-bbf1-14104126e6b6",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "QcM4hNMSLenRAcxC",
+          "name": "Supabase policy-rag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "=Qwen/Qwen3-Embedding-8B",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        208
+      ],
+      "id": "76639434-959c-41ec-a36b-d18a30b35e45",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "jmX7m7n2WVA6EVz8",
+          "name": "Nebius (OpenAI-compatible)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "loader": "pdfLoader",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "doc_name",
+                "value": "={{ $json['Document name'] }}"
+              },
+              {
+                "name": "publisher",
+                "value": "={{ $json['Publisher'] }}"
+              },
+              {
+                "name": "year",
+                "value": "={{ $json['Year'] }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        208
+      ],
+      "id": "f63271f2-006c-4d2a-9968-01930a4e131a",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 1200,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        448,
+        272
+      ],
+      "id": "9f1f7b43-9835-40c9-9443-2738e210dba9",
+      "name": "Recursive Character Text Splitter"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6dc8d73f-14ee-4644-8181-54c95b3b95a0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8d36e9335d6e2be886b683961306d581dd7cf0aa96d19d1d303beadcb18a3f57"
+  },
+  "nodeGroups": [],
+  "id": "HIe2dbrvjF4kwfvZ",
+  "tags": []
+}

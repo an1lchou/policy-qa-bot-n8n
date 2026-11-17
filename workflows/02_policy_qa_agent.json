@@ -1,0 +1,201 @@
+{
+  "name": "02_policy_qa_agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2488e1f0-5f1f-41de-a4da-6aeff888da99",
+      "name": "When chat message received",
+      "webhookId": "852032c7-1f62-4c25-87e0-710d4fb7e090"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a compliance research assistant for pharmaceutical commercial and legal teams. You answer questions using only the documents available through the policy_search tool.\n\nRules:\n1. Always call policy_search before answering, even if you think you know the answer.\n2. Use only facts found in the retrieved passages. Do not use outside knowledge.\n3. Cite every claim as [Document name, p. X], using the doc_name and page number from the passage metadata.\n4. If the passages do not answer the question, reply exactly: \"I could not find this in the indexed documents.\" and then list the documents that are indexed. Do not guess.\n5. If the question is ambiguous, ask one short clarifying question before answering.\n6. State whether a point comes from a voluntary industry code (the PhRMA Code) or from federal guidance (HHS-OIG), because they carry different weight.\n7. When your answer says whether something is permitted, add: \"This summarizes the documents and is not legal advice.\"\n\nIndexed documents:\n- PhRMA Code on Interactions with Health Care Professionals (2022)\n- OIG Special Fraud Alert: Speaker Programs (2020)\n- OIG Compliance Program Guidance for Pharmaceutical Manufacturers (2003)\n- OIG General Compliance Program Guidance (2023)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "0f0d5716-e5f1-4ce8-b6f4-17dfc21ca2f6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+          "mode": "list",
+          "cachedResultName": "Qwen/Qwen3-30B-A3B-Instruct-2507"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "a747074b-9d18-4a2f-8d10-4ce94f06ac8c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "jmX7m7n2WVA6EVz8",
+          "name": "Nebius (OpenAI-compatible)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Searches the indexed pharma compliance documents: the PhRMA Code, the OIG Special Fraud Alert on speaker programs, the OIG compliance program guidance for pharmaceutical manufacturers (2003), and the OIG General Compliance Program Guidance (2023). Use it for every question. Returns passages with the document name and page number.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 15,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.4,
+      "position": [
+        736,
+        0
+      ],
+      "id": "bd13aecc-e3e5-4d4a-aea7-c59f4d765af1",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "QcM4hNMSLenRAcxC",
+          "name": "Supabase policy-rag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "=Qwen/Qwen3-Embedding-8B",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        224
+      ],
+      "id": "9773d810-afce-41ab-bab6-b25a586200c4",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "jmX7m7n2WVA6EVz8",
+          "name": "Nebius (OpenAI-compatible)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "topN": 5
+      },
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        864,
+        208
+      ],
+      "id": "5ba4d397-01b6-43a5-9a04-97a1c7b8ae4b",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "9HWa2yJZd5MM7CS8",
+          "name": "Cohere trial"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b5ff2a27-0913-4f65-b736-c18a609ccef5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8d36e9335d6e2be886b683961306d581dd7cf0aa96d19d1d303beadcb18a3f57"
+  },
+  "nodeGroups": [],
+  "id": "HBd2STNW1921DkSp",
+  "tags": []
+}
