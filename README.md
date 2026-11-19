@@ -5,7 +5,7 @@ A no-code RAG assistant built in n8n. It answers plain-English questions about p
 Project 1, Track 1 (n8n) of The Gen Academy Week 2 RAG project.
 
 ## Corpus
-Four public PDFs, 141 pages, 400 chunks: PhRMA Code (2022), OIG Special Fraud Alert on Speaker Programs (2020), OIG Compliance Program Guidance for Pharmaceutical Manufacturers (2003), OIG General Compliance Program Guidance (2023). See `corpus/SOURCES.md`.
+Four public PDFs, 141 pages, 404 chunks: PhRMA Code (2022), OIG Special Fraud Alert on Speaker Programs (2020), OIG Compliance Program Guidance for Pharmaceutical Manufacturers (2003), OIG General Compliance Program Guidance (2023). See `corpus/SOURCES.md`.
 
 ## Architecture
 Two n8n workflows share one Supabase table.
