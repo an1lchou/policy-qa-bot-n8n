@@ -90,6 +90,7 @@
         "loader": "pdfLoader",
         "textSplittingMode": "custom",
         "options": {
+          "splitPages": true,
           "metadata": {
             "metadataValues": [
               {
@@ -111,8 +112,8 @@
       "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
       "typeVersion": 1.1,
       "position": [
-        352,
-        208
+        432,
+        128
       ],
       "id": "f63271f2-006c-4d2a-9968-01930a4e131a",
       "name": "Default Data Loader"
@@ -185,7 +186,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "6dc8d73f-14ee-4644-8181-54c95b3b95a0",
+  "versionId": "0f702175-c34e-4d45-9b5d-4b9513fffec9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8d36e9335d6e2be886b683961306d581dd7cf0aa96d19d1d303beadcb18a3f57"
